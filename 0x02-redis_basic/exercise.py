@@ -72,3 +72,33 @@ class Cache:
     def get_int(self, key: str) -> Optional[int]:
         """Retrieve data as int"""
         return self.get(key, lambda d: int(d))
+
+    def get_call_count(self, method_name: str) -> int:
+        """Retrieve the call count for a method"""
+        return int(self._redis.get(f"{method_name}_calls") or 0)
+
+    def get_input_history(self, method_name: str) -> list:
+        """Retrieve the input history for a method"""
+        inputs_key = f"{method_name}:inputs"
+        return self._redis.lrange(inputs_key, 0, -1)
+
+    def get_output_history(self, method_name: str) -> list:
+        """Retrieve the output history for a method"""
+        outputs_key = f"{method_name}:outputs"
+        return self._redis.lrange(outputs_key, 0, -1)
+
+
+def replay(method: Callable):
+    """Display the history of calls to a method"""
+    cache = method.__self__
+    method_name = method.__qualname__
+
+    inputs = cache.get_input_history(method_name)
+    outputs = cache.get_output_history(method_name)
+
+    print(f"{method.__qualname__} was called {len(inputs)} times:")
+
+    for input_data, output_data in zip(inputs, outputs):
+        print(
+            f"{method.__qualname__}(*{eval(input_data)})
+            -> {output_data.decode('utf-8')}")
