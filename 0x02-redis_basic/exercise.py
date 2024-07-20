@@ -45,8 +45,8 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()
 
-    # @count_calls
-    # @call_history
+    @count_calls
+    @call_history
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """sroring data"""
         key = str(uuid.uuid4())
@@ -100,5 +100,6 @@ def replay(method: Callable):
 
     for input_data, output_data in zip(inputs, outputs):
         print(
-            f"{method.__qualname__}(*{eval(input_data)})
-            -> {output_data.decode('utf-8')}")
+            f"{method.__qualname__}(*{eval(input_data)}) -> "
+            f"{output_data.decode('utf-8')}"
+            )
